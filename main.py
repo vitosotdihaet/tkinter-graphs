@@ -7,36 +7,139 @@ def f(x):
         return eval(real_function.replace('x', str(x)))
     except: return None
 
-def dichotomy(a, b):
-    pass
+def find_all_xs(a, b, iters):
+    t = iters
 
-def chord(a, b):
-    try:
+    s = [a, (a + b)/2]
+    e = [b, (a + b)/2]
+
+    for _ in range(1, t):
+        ls = len(s)
+        le = len(e)
+        for i in range(1, ls + 1, 2):
+            s = s[:i] + [(s[i - 1] + s[i])/2] + s[i:]
+
+        for i in range(1, le + 1, 2):
+            e = e[:i] + [(e[i - 1] + e[i])/2] + e[i:]
+
+    s.extend(e[::-1])
+    ab = s
+    lab = len(ab)
+    ab.pop(lab//2)
+    # print(ab)
+
+    answ = []
+
+    for i in range(lab - 2):
+        current = dichotomy(ab[i], ab[i + 1])
+        if current[0] == True:
+            answ.append(current[1])
+    
+    print('Roots in this area:', *answ)
+
+def dichotomy(a, b):
+    print('Dichotomy method on', a, 'to', b, '-', end=' ')
+
+    fa = f(a)
+    fb = f(b)
+    if fa == 0: return True, a
+    elif fb == 0: return True, b
+
+    m = (a + b)/2
+    while True:
         fa = f(a)
         fb = f(b)
-        if fa == 0: print(a); return
-        elif fb == 0: print(b); return
-        ap, bp = a - 1, b + 1
+
+        if fa == None or fb == None:
+            fa = f(a + epsilon)
+            fb = f(b + epsilon)
+
+        canv.create_line(int(a * size//(sc * 200)) + size//2,
+                         int(canv['height'])/2 - 50,
+                         int(a * size//(sc * 200)) + size//2,
+                         int(canv['width'])/2 + 50,
+                         fill='blue')
+
+        canv.create_line(int(b * size//(sc * 200)) + size//2,
+                         int(canv['height'])/2 - 50,
+                         int(b * size//(sc * 200)) + size//2,
+                         int(canv['width'])/2 + 50,
+                         fill='blue')
+
         m = (a + b)/2
 
-        while not (ap == a and bp == b):
-            fa = f(a)
-            fb = f(b)
-
-            if (fb - fa) != 0:
-                m = (a * fb - b * fa)/(fb - fa)
-
+        fm = f(m)
+        if fm == None:
+            m += epsilon
             fm = f(m)
-            if fa * fm < 0:
+
+        # print(m, '-', fm)
+        if abs(fm) <= epsilon or b == m or a == m:
+            break
+        else:
+            if fm * fa > 0:
+                a = m
+            else:
+                b = m
+
+    if abs(fm) <= epsilon:
+        print(m)
+        return True, m
+    else:
+        print('no roots!')
+        return False, 0
+
+def chord(a, b):
+    print('Chord method on', a, 'to', b, '-', end=' ')
+
+    fa = f(a)
+    fb = f(b)
+
+    if fa == 0: return True, a
+    elif fb == 0: return True, b
+
+    ap, bp = a - 1, b + 1
+
+    m = (a + b)/2
+    while True:
+        fa = f(a)
+        fb = f(b)
+
+        if fa == None or fb == None:
+            fa = f(a + epsilon)
+            fb = f(b + epsilon)
+
+        canv.create_line(int(a * size//(sc * 200)) + size//2,
+                            int(fa * size//(sc * 200)) + size//2,
+                            int(b * size//(sc * 200)) + size//2,
+                            int(fb * size//(sc * 200)) + size//2,
+                            fill='orange')
+
+        m = (a * fb - b * fa)/(fb - fa)
+
+        fm = f(m)
+        if fm == None:
+            m += epsilon
+            fm = f(m)
+
+        # print(m, '-', fm)
+        if (abs(fm) <= epsilon or b == m or a == m or
+            abs(a - ap) < epsilon or abs(b - bp) < epsilon):
+            break
+        else:
+            if fm * fa > 0:
                 ap = a
                 a = m
-            elif fb * fm < 0:
+            else:
                 bp = b
                 b = m
-            else: break
 
+    if abs(fm) <= epsilon:
         print(m)
-    except: print(m)
+        return True, m
+    else:
+        print('no roots!') 
+        return False, 0
 
 def resize(event):
     frame_main['width'] = event.width
@@ -53,7 +156,7 @@ def resize(event):
     build(event)
 
 def build(event):
-    global real_function
+    global real_function, sc, size, precision
     dots = []
     sc = scale.get() * 0.01
 
@@ -64,6 +167,7 @@ def build(event):
 
     canv.create_line(size//2, size, size//2, 0, width=2, arrow=tk.LAST)
     canv.create_line(0, size//2, size, size//2, width=2, arrow=tk.LAST)
+
     for v in range(10):
         canv.create_line(size*v//10, size, size*v//10, 0, width=1)
     for h in range(10):
@@ -71,9 +175,10 @@ def build(event):
 
     precision = int(min(frame_main['width'], frame_main['height']))/1600
     step = round(sc/(8 * precision), 4)
+
+    # x and y are real graph numbers
     x = -sc * 100 - step
-    
-    # x and y numbers
+
     canv.create_text(size//2 + 30, 20, text=str(abs(int(x))), font=('Purisa', 16))
     canv.create_text(size - 20, size//2 + 30, text=str(abs(int(x))), font=('Purisa', 16))
 
@@ -86,7 +191,7 @@ def build(event):
             # print(y)
             xcord = int(x * size//(sc * 200)) + size//2
             ycord = int(-y * size//(sc * 200)) + size//2
-            if -precision * 10000 < ycord < precision * 10000:
+            if -precision * 100000 < ycord < precision * 100000:
                 dots.append((xcord, ycord))
         except:
             # print('error at', x)
@@ -121,7 +226,6 @@ def build(event):
             dots = []
             continue
 
-
     canv.create_line(*dots, width=3)
 
 
@@ -155,7 +259,7 @@ if __name__ == "__main__":
     function_entr.grid(row=0, column=0)
 
     scale = tk.Scale(frame_input,
-                    from_=1, to=100, 
+                    from_=1, to=200, 
                     orient=tk.HORIZONTAL, 
                     length=200, command=build)
     scale.grid(row=2, column=0)
@@ -164,9 +268,23 @@ if __name__ == "__main__":
     button_build.grid(row=1, column=0)
     button_build.bind("<ButtonPress-1>", build)
 
-    button_chord = tk.Button(frame_methods, width=15, height=2, text='Chord',
+    button_chord = tk.Button(frame_methods, width=10, height=2, text='Chord',
                              command=lambda: chord(float(from_val.get()), float(to_val.get())))
     button_chord.grid(row=0, column=0)
+
+    button_dich = tk.Button(frame_methods, width=10, height=2, text='Dichotomy',
+                             command=lambda: dichotomy(float(from_val.get()), float(to_val.get())))
+    button_dich.grid(row=0, column=1)
+
+    button_findxs = tk.Button(frame_methods, width=10, height=2, text='Find all xs',
+                             command=lambda: find_all_xs(float(from_val.get()), float(to_val.get()), int(iters.get())))
+    button_findxs.grid(row=0, column=2)
+
+    iters = tk.Scale(frame_methods,
+                     from_=2, to=10, 
+                     orient=tk.HORIZONTAL, 
+                     length=60, command=build)
+    iters.grid(row=1, column=2)
 
     from_val = tk.StringVar()
     from_val.set('-2')
@@ -188,5 +306,7 @@ if __name__ == "__main__":
     to_entr.grid(row=2, column=1)
 
     frame_main.bind("<Configure>", resize)
+
+    epsilon = 1.19209e-07
 
     root.mainloop()
