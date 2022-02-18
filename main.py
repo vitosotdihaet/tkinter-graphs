@@ -8,6 +8,7 @@ def f(x):
     except: return None
 
 def find_all_xs(a, b, iters):
+    build(None)
     t = iters
 
     s = [a, (a + b)/2]
@@ -74,7 +75,7 @@ def dichotomy(a, b):
             fm = f(m)
 
         # print(m, '-', fm)
-        if abs(fm) <= epsilon or b == m or a == m:
+        if abs(fm) <= epsilon or m <= epsilon or b == m or a == m:
             break
         else:
             if fm * fa > 0:
@@ -253,8 +254,9 @@ if __name__ == "__main__":
     canv = tk.Canvas(frame_top, width=size, height=size)
     canv.pack(fill=tk.Y, expand=tk.YES)
 
+
     function_val = tk.StringVar()
-    function_val.set('sin(sin(x))**2/x')
+    function_val.set('sin(sin(x))**2/x - 0.25')
     function_entr = tk.Entry(frame_input, width=25, textvariable=function_val)
     function_entr.grid(row=0, column=0)
 
@@ -263,6 +265,15 @@ if __name__ == "__main__":
                     orient=tk.HORIZONTAL, 
                     length=200, command=build)
     scale.grid(row=2, column=0)
+
+    iters_label = tk.Label(frame_methods, width=10, text='Precision:')
+    iters_label.grid(row=1, column=2)
+
+    iters = tk.Scale(frame_methods,
+                     from_=2, to=10, 
+                     orient=tk.HORIZONTAL, 
+                     length=60, command=build)
+    iters.grid(row=2, column=2)
 
     button_build = tk.Button(frame_input, width=20, height=2, text='Build!')
     button_build.grid(row=1, column=0)
@@ -278,13 +289,8 @@ if __name__ == "__main__":
 
     button_findxs = tk.Button(frame_methods, width=10, height=2, text='Find all xs',
                              command=lambda: find_all_xs(float(from_val.get()), float(to_val.get()), int(iters.get())))
-    button_findxs.grid(row=0, column=2)
+    button_findxs.grid(row=0, column=2)    
 
-    iters = tk.Scale(frame_methods,
-                     from_=2, to=10, 
-                     orient=tk.HORIZONTAL, 
-                     length=60, command=build)
-    iters.grid(row=1, column=2)
 
     from_val = tk.StringVar()
     from_val.set('-2')
