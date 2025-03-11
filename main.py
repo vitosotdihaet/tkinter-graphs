@@ -6,14 +6,14 @@ from functools import cache
 @cache
 def x(t, iter) -> float:
     if iter == 0:
-        return t
+        return sin(t)**10
 
     if 0 <= t <= 1/3:
-        return x(3 * t, iter - 1) + sin(9 * 3.1415 * t)
+        return 1/4 * x(3 * t, iter - 1) + sin(9 * 3.1415 * t)
     elif 1/3 < t < 2/3:
-        return x(2 - 3 * t, iter - 1)
+        return 1/4 * x(2 - 3 * t, iter - 1)
     elif 2/3 <= t <= 1:
-        return x(3 * t - 2, iter - 1) + sin(9 * 3.1415 * t)
+        return 1/4 * x(3 * t - 2, iter - 1) + sin(9 * 3.1415 * t)
 
     return 0
 
